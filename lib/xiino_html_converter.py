@@ -64,6 +64,7 @@ supported_tags = [
     "SUB",
     "SUP",
     "TABLE",
+    "TITLE",  # why was this not included?
     "TD",
     "TH",
     "TR",
