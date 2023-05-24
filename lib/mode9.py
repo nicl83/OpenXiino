@@ -10,6 +10,7 @@ def compress_mode9(image: PIL.Image.Image):
     image = image.quantize(palette=xiino_palette).convert(
         "RGB"
     )  # quantise and then un-quantise
+
     data = list(image.getdata())
     rows = []
     buffer = bytearray()
@@ -120,11 +121,11 @@ def compress_line(line: list, prev_line: list | None, first_line: bool):
             # rle not applicable
             # and does not appear anywhere on previous line
             # just write the colour to the buffer
-            active_colour = 0 if pixel not in PALETTE else PALETTE.index(pixel)
+            active_colour = 0xE6 if pixel not in PALETTE else PALETTE.index(pixel)
             buffer.append(active_colour)
         # HACK force RLE
         elif best_compression == "rle":
-            active_colour = 0 if pixel not in PALETTE else PALETTE.index(pixel)
+            active_colour = 0xE6 if pixel not in PALETTE else PALETTE.index(pixel)
             buffer.append(active_colour)
 
             if rle_length >= 6:

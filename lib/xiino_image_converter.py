@@ -244,7 +244,7 @@ class EBDConverter:
             if px in PALETTE:
                 buf.append(PALETTE.index(px))
             else:
-                buf.append(0x7B)
+                buf.append(0xE6)
         return buf
 
     def __divide_chunks(self, l: list, n: int):
