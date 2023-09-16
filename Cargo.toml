@@ -1,8 +1,11 @@
 [package]
-name = "OpenXiino"
+name = "openxiino_rs"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+axum = "0.6.20"
+html_editor = "0.6.1"
+ebdimage-rs = {git = "https://github.com/nicl83/ebdimage-rs"}
