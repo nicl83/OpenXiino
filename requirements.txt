@@ -1,4 +1,0 @@
-bitstring==4.0.2
-Pillow==9.5.0
-Requests==2.31.0
-yattag==1.15.1
