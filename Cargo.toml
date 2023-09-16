@@ -9,3 +9,6 @@ edition = "2021"
 axum = "0.6.20"
 html_editor = "0.6.1"
 ebdimage-rs = {git = "https://github.com/nicl83/ebdimage-rs"}
+tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread"] }
+tracing-subscriber = { version = "0.3.17", features = ["fmt"] }
+serde = "1.0.188"
