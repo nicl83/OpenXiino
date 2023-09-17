@@ -1,12 +1,14 @@
-use core::fmt;
+use std::fmt;
 use std::net::SocketAddr;
 
 use axum::{
     extract::{Path, RawQuery},
-    response::Html,
+    http::{self, HeaderMap, Response, StatusCode, Uri},
+    response::{Html, IntoResponse},
     routing::get,
     Router,
 };
+use serde::Deserialize;
 
 #[tokio::main]
 async fn main() {
@@ -26,23 +28,25 @@ async fn main() {
         .unwrap();
 }
 
+#[axum_macros::debug_handler]
 async fn handler(
-    Path((colour_depth, screen_width, _unknown, text_encoding)): Path<(
-        String,
-        String,
-        String,
-        String,
-    )>,
+    Path((colour_depth, screen_width, _, text_encoding)): Path<(String, String, String, String)>,
     RawQuery(url): RawQuery,
-) -> Html<String> {
-    let Some(url) = url else {
-        return Html(String::from("Invalid URL"));
-    };
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    let uri: Uri = url
+        .unwrap_or("http://invalid_url".to_string())
+        .parse()
+        .unwrap();
+
     let device_info = DeviceInfo::new(colour_depth, screen_width, text_encoding);
-    match &url[..] {
-        "http://deviceinfo/" => show_device_info(device_info, url).await,
-        _ => do_proxy(device_info, url).await,
-    }
+
+    let resp: Result<_, _> = match uri.host().unwrap() {
+        "deviceinfo" => show_device_info(device_info, uri).await,
+        _ => do_proxy(device_info, uri).await,
+    };
+
+    resp.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
 }
 
 async fn fallback_handler() -> Html<String> {
@@ -58,7 +62,10 @@ async fn fallback_handler() -> Html<String> {
     )
 }
 
-async fn show_device_info(device_info: DeviceInfo, url: String) -> Html<String> {
+async fn show_device_info(
+    device_info: DeviceInfo,
+    uri: Uri,
+) -> Result<Response<String>, http::Error> {
     let width = device_info.screen_width;
     let mode = device_info.screen_mode;
     let depth = device_info.screen_depth;
@@ -72,17 +79,19 @@ async fn show_device_info(device_info: DeviceInfo, url: String) -> Html<String> 
         <li>Colour mode: {mode}</li>
         <li>Colour depth: {depth}</li>
         <li>Text encoding: {encoding}</li>
-        <li>Requested URL: {url}</li>
+        <li>Requested URL: {uri}</li>
         </ul>
         </body>
         </html>
         "
     );
-    Html(dbg!(html))
+    Response::builder()
+        .header("Content-Type", "text/html")
+        .body(html)
 }
 
-async fn do_proxy(device_info: DeviceInfo, url: String) -> Html<String> {
-    Html(format!("
+async fn do_proxy(device_info: DeviceInfo, url: Uri) -> Result<Response<String>, http::Error> {
+    Response::builder().header("Content-Type", "text/html").body(format!("
     <html>
     <body>
     <h1>The Backrooms</h1>

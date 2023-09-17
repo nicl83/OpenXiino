@@ -12,3 +12,4 @@ ebdimage-rs = {git = "https://github.com/nicl83/ebdimage-rs"}
 tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread"] }
 tracing-subscriber = { version = "0.3.17", features = ["fmt"] }
 serde = "1.0.188"
+axum-macros = "0.3.8"
