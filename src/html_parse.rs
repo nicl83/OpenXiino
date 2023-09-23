@@ -8,12 +8,12 @@ use crate::supported_tags::SUPPORTED_TAGS;
 
 // Parse HTML to remove tags Xiino does not support.
 pub fn parse_html(html: &str) -> String {
-    let doc_tree = match html_editor::parse(html) {
+    let mut doc_tree = match html_editor::parse(html) {
         Ok(tree) => tree,
         Err(error) => return error_page(error),
     };
-
-    "foobar".to_string()
+    doc_tree.retain_mut(recursive_tag_stripper);
+    doc_tree.trim().html()
 }
 
 fn error_page(error: String) -> String {
@@ -39,23 +39,29 @@ fn error_page(error: String) -> String {
 }
 
 /// Remove unsupported tags from a Vec<Node>, then give it back
-fn recursive_tag_stripper(dom: &mut Vec<Node>) -> bool {
-    let mut out_dom: Vec<Node> = Vec::new();
-    for tag in dom {
-        if let Some(tag) = tag.as_element_mut() {
-            if SUPPORTED_TAGS.contains(&tag.name.to_lowercase().as_str()) {
-                // tag passes The Vibe Check
-                if tag.children.len() > 0 {
-                    // aw FUCK here we go
-                    recursive_tag_stripper(&mut tag.children);
-                }
-                out_dom.push(tag.clone().into_node())
+fn recursive_tag_stripper(node: &mut Node) -> bool {
+    if let Some(element) = node.as_element_mut() {
+        if SUPPORTED_TAGS.contains(&element.name.to_lowercase().as_str()) {
+            // debug hackery ahead, strip for release
+            #[cfg(debug_assertions)]
+            {
+                println!("RTS: kept tag {}", element.name);
             }
+            if element.children.len() > 0 {
+                element.children.retain_mut(recursive_tag_stripper);
+            }
+            true
         } else {
-            out_dom.push(tag.clone());
+            #[cfg(debug_assertions)]
+            {
+                println!("RTS: dropped tag {}", element.name);
+            }
+            false
         }
+    } else {
+        // it's not an element, we don't need to worry
+        return true;
     }
-    true
 }
 
 fn escape_error_data(error: String) -> String {
@@ -93,5 +99,22 @@ mod tests {
         let result = parse_html(INVALID_HTML);
         dbg!(&result);
         assert!(result.contains("HTML Parse Error"));
+    }
+
+    #[test]
+    fn recursive_tag_stripper_testpilot() {
+        let html = r#"
+            <!DOCTYPE HTML>
+            <html>
+                <head>
+                    <title>Example</title>
+                </head>
+                <body>
+                    <p>This tag should be kept.</p>
+                    <foobar>This tag should not be kept.</foobar>
+                </body>
+            </html>
+        "#;
+        println!("{}", parse_html(html));
     }
 }
