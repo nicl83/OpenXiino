@@ -38,7 +38,8 @@ fn error_page(error: String) -> String {
         .html()
 }
 
-/// Remove unsupported tags from a Vec<Node>, then give it back
+/// Check to see if a Node is supported by Xiino.
+/// Designed for use with `retain_mut`.
 fn recursive_tag_stripper(node: &mut Node) -> bool {
     if let Some(element) = node.as_element_mut() {
         if SUPPORTED_TAGS.contains(&element.name.to_lowercase().as_str()) {
