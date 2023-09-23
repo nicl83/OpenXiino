@@ -1,4 +1,5 @@
 pub mod html_parse;
+pub mod supported_tags;
 
 use std::fmt;
 use std::net::SocketAddr;

@@ -1,8 +1,10 @@
 use html_editor::{
     self,
     operation::{Editable, Htmlifiable, Selector},
-    Node,
+    Element, Node,
 };
+
+use crate::supported_tags::SUPPORTED_TAGS;
 
 // Parse HTML to remove tags Xiino does not support.
 pub fn parse_html(html: &str) -> String {
@@ -10,6 +12,7 @@ pub fn parse_html(html: &str) -> String {
         Ok(tree) => tree,
         Err(error) => return error_page(error),
     };
+
     "foobar".to_string()
 }
 
@@ -33,6 +36,26 @@ fn error_page(error: String) -> String {
         .insert_to(&Selector::from("body"), err_tag)
         .trim()
         .html()
+}
+
+/// Remove unsupported tags from a Vec<Node>, then give it back
+fn recursive_tag_stripper(dom: &mut Vec<Node>) -> bool {
+    let mut out_dom: Vec<Node> = Vec::new();
+    for tag in dom {
+        if let Some(tag) = tag.as_element_mut() {
+            if SUPPORTED_TAGS.contains(&tag.name.to_lowercase().as_str()) {
+                // tag passes The Vibe Check
+                if tag.children.len() > 0 {
+                    // aw FUCK here we go
+                    recursive_tag_stripper(&mut tag.children);
+                }
+                out_dom.push(tag.clone().into_node())
+            }
+        } else {
+            out_dom.push(tag.clone());
+        }
+    }
+    true
 }
 
 fn escape_error_data(error: String) -> String {
