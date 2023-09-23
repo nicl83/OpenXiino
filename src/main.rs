@@ -1,3 +1,5 @@
+pub mod html_parse;
+
 use std::fmt;
 use std::net::SocketAddr;
 
