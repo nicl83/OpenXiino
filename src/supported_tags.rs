@@ -1,6 +1,6 @@
 /// Tags supported by Xiino.
 /// Taken from HTMLSpecifications.txt
-pub const SUPPORTED_TAGS: [&str; 73] = [
+pub const SUPPORTED_TAGS: [&str; 74] = [
     "a",
     "address",
     "area",
@@ -78,4 +78,6 @@ pub const SUPPORTED_TAGS: [&str; 73] = [
     // "Core" tags
     "html",
     "body",
+    // A begrudging guest that doesn't seem to hurt Xiino but breaks OpenXiino
+    "span",
 ];

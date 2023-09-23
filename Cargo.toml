@@ -13,3 +13,4 @@ tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread"] }
 tracing-subscriber = { version = "0.3.17", features = ["fmt"] }
 serde = "1.0.188"
 axum-macros = "0.3.8"
+reqwest = "0.11.20"

@@ -1,17 +1,22 @@
 pub mod html_parse;
 pub mod supported_tags;
 
-use std::fmt;
 use std::net::SocketAddr;
+use std::{error, fmt};
 
 use axum::{
     extract::{Path, RawQuery},
-    http::{self, HeaderMap, Response, StatusCode, Uri},
+    http::{self, request, HeaderMap, Response, StatusCode, Uri},
     response::{Html, IntoResponse},
     routing::get,
     Router,
 };
+use html_editor::parse;
+use html_parse::parse_html;
+use reqwest::Request;
 use serde::Deserialize;
+
+use crate::html_parse::escape_error_data;
 
 #[tokio::main]
 async fn main() {
@@ -94,14 +99,39 @@ async fn show_device_info(
 }
 
 async fn do_proxy(device_info: DeviceInfo, url: Uri) -> Result<Response<String>, http::Error> {
-    Response::builder().header("Content-Type", "text/html").body(format!("
-    <html>
-    <body>
-    <h1>The Backrooms</h1>
-    <p>You tried to make a request to {url}, but this version of OpenXiino can't access the web yet. Sorry!</p>
-    </body>
-    </html>
-    "))
+    let http_get_result = match reqwest::get(url.to_string()).await {
+        Ok(result) => result,
+        Err(e) => return Ok(error_page(e.to_string())), // it's not ok but shh
+    };
+    let html = match http_get_result.text().await {
+        Ok(html) => html,
+        Err(e) => return Ok(error_page(e.to_string())),
+    };
+
+    let parsed_html = dbg!(parse_html(&html));
+
+    Response::builder()
+        .header("Content-Type", "text/html")
+        .body(parsed_html)
+}
+
+fn error_page(error: String) -> Response<String> {
+    let clean_error = escape_error_data(error);
+    Response::builder()
+        .header("Content-Type", "text/html")
+        .body(format!(
+            r#"
+        <!DOCTYPE HTML>
+        <html>
+        <body>
+        <h1>Proxy failure!</h1>
+        <p>Something went wrong while making a proxy request.<p>
+        <code>{clean_error}</code>
+        </html>
+        </body>
+        "#
+        ))
+        .unwrap()
 }
 
 enum ScreenType {

@@ -7,13 +7,20 @@ use html_editor::{
 use crate::supported_tags::SUPPORTED_TAGS;
 
 // Parse HTML to remove tags Xiino does not support.
+// TODO: EBDIMAGE conversion
 pub fn parse_html(html: &str) -> String {
     let mut doc_tree = match html_editor::parse(html) {
         Ok(tree) => tree,
         Err(error) => return error_page(error),
     };
+    #[cfg(debug_assertions)]
+    {
+        println!("RTS: ---- CUT HERE ----");
+    }
     doc_tree.retain_mut(recursive_tag_stripper);
-    doc_tree.trim().html()
+    let html = doc_tree.trim().html();
+    // HACK: workaround to mystery Xiino behaviour
+    format!("            {}", html)
 }
 
 fn error_page(error: String) -> String {
@@ -32,10 +39,11 @@ fn error_page(error: String) -> String {
     )
     .unwrap();
     let err_tag = Node::new_element("code", vec![], vec![Node::Text(escape_error_data(error))]);
-    err_page
+    let html = err_page
         .insert_to(&Selector::from("body"), err_tag)
         .trim()
-        .html()
+        .html();
+    format!("            {html}") // Sometimes, I really hate developing for closed-source software
 }
 
 /// Check to see if a Node is supported by Xiino.
@@ -60,12 +68,13 @@ fn recursive_tag_stripper(node: &mut Node) -> bool {
             false
         }
     } else {
-        // it's not an element, we don't need to worry
         return true;
     }
 }
 
-fn escape_error_data(error: String) -> String {
+/// Replace HTML special chars with their escaped equivelants.
+/// Used for debugging.
+pub fn escape_error_data(error: String) -> String {
     error
         .replace("&", "&amp;")
         .replace("<", "&lt;")
