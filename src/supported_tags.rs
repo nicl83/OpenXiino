@@ -1,6 +1,6 @@
 /// Tags supported by Xiino.
 /// Taken from HTMLSpecifications.txt
-pub const SUPPORTED_TAGS: [&str; 74] = [
+pub const SUPPORTED_TAGS: [&str; 77] = [
     "a",
     "address",
     "area",
@@ -72,12 +72,16 @@ pub const SUPPORTED_TAGS: [&str; 74] = [
     // additional header tags not specified but known or assumed to be supported
     "head",
     "title",
-    "link",
+    // "link",
     "base",
     "meta",
     // "Core" tags
     "html",
     "body",
-    // A begrudging guest that doesn't seem to hurt Xiino but breaks OpenXiino
+    // Begrudging guests that doesn't seem to hurt Xiino but breaks OpenXiino
     "span",
+    "main",
+    "section",
+    "thead",
+    "tbody",
 ];

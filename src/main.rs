@@ -99,17 +99,29 @@ async fn show_device_info(
 }
 
 async fn do_proxy(device_info: DeviceInfo, url: Uri) -> Result<Response<String>, http::Error> {
-    let http_get_result = match reqwest::get(url.to_string()).await {
+    #[cfg(debug_assertions)]
+    {
+        println!("doing a proxy request for {url}...")
+    }
+    let client = reqwest::Client::builder()
+        .user_agent("OpenXiino/1.0 (http://github.com/nicl83/openxiino) / reqwest 0.11.20")
+        .build()
+        .unwrap();
+    let http_get_result = match client.get(url.to_string()).send().await {
         Ok(result) => result,
         Err(e) => return Ok(error_page(e.to_string())), // it's not ok but shh
     };
+    dbg!(http_get_result.headers());
     let html = match http_get_result.text().await {
         Ok(html) => html,
         Err(e) => return Ok(error_page(e.to_string())),
     };
 
     let parsed_html = dbg!(parse_html(&html));
-
+    #[cfg(debug_assertions)]
+    {
+        println!("proxy request done")
+    }
     Response::builder()
         .header("Content-Type", "text/html")
         .body(parsed_html)

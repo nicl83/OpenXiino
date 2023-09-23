@@ -9,10 +9,11 @@ use crate::supported_tags::SUPPORTED_TAGS;
 // Parse HTML to remove tags Xiino does not support.
 // TODO: EBDIMAGE conversion
 pub fn parse_html(html: &str) -> String {
-    let mut doc_tree = match html_editor::parse(html) {
-        Ok(tree) => tree,
-        Err(error) => return error_page(error),
-    };
+    // let mut doc_tree = match html_editor::parse(html) {
+    //     Ok(tree) => tree,
+    //     Err(error) => return error_page(error),
+    // };
+    let mut doc_tree = html_editor::try_parse(html);
     #[cfg(debug_assertions)]
     {
         println!("RTS: ---- CUT HERE ----");
