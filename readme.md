@@ -8,7 +8,8 @@ Converts images from any format supported by Pillow to Xiino's proprietary forma
     - For devices with Wi-Fi or Bluetooth, see the [PalmDB guide](https://palmdb.net/help/internet-connect).
     - For older devices that lack wireless connectivity, I recommend [Softick PPP](https://palmdb.net/app/softick-ppp). This will require a USB or serial connection.
     - Other methods of connecting to the internet - such as through a GSM mobile phone - will work, as long as the dataserver host is reachable.
-2. Install the requirements from `requirements.txt`. (`pip -r requirements.txt`)
+2. Install the requirements from `requirements.txt`. (`pip -r requirements.txt`).
+    - You will need to use the latest version of Python3 - OpenXiino will not run under Python 3.9 or earlier.
 3. Run the server. (`python dataserver.py`)  
 The server will run on port 4040 - this cannot be changed at this time
 4. If you haven't already, install [Xiino](https://palmdb.net/app/xiino) on your Palm OS device.
